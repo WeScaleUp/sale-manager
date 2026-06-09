@@ -8,7 +8,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #2e7d32; --green-light: #e8f5e9; --green-mid: #4caf50;
+      --green: #2e7d32; --green-light: #e8f5e9;
       --red: #c62828; --red-light: #ffebee;
       --yellow-light: #fffde7; --yellow-border: #f9a82566;
       --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
@@ -21,13 +21,8 @@
     .logo-icon { width: 32px; height: 32px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; }
     .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
     .badge-green { background: var(--green-light); color: var(--green); }
-    .badge-gray { background: var(--gray-100); color: var(--gray-600); }
+    .badge-red { background: var(--red-light); color: var(--red); }
     main { flex: 1; max-width: 640px; width: 100%; margin: 2rem auto; padding: 0 1rem; }
-    .connect-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; text-align: center; }
-    .connect-screen h2 { font-size: 22px; font-weight: 600; margin-bottom: 0.75rem; }
-    .connect-screen p { color: var(--gray-600); font-size: 14px; margin-bottom: 2rem; line-height: 1.6; }
-    .btn-shopify { display: inline-flex; align-items: center; gap: 10px; background: var(--green); color: #fff; padding: 12px 24px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 500; text-decoration: none; border: none; cursor: pointer; transition: opacity 0.15s; }
-    .btn-shopify:hover { opacity: 0.9; }
     .progress { display: flex; align-items: center; margin-bottom: 2rem; }
     .prog-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray-400); }
     .prog-item.active { color: var(--gray-800); font-weight: 500; }
@@ -65,7 +60,7 @@
     .tags-area { min-height: 32px; margin-top: 8px; }
     .metric-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem; }
     .metric { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1rem; text-align: center; }
-    .metric .val { font-size: 24px; font-weight: 600; color: var(--gray-800); }
+    .metric .val { font-size: 24px; font-weight: 600; }
     .metric .lbl { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
     .active-sale-card { background: var(--yellow-light); border: 1px solid var(--yellow-border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
     .active-sale-card .title { font-weight: 600; font-size: 14px; color: #a57c00; margin-bottom: 6px; }
@@ -76,6 +71,7 @@
     .preview-row .val { font-weight: 500; text-align: right; max-width: 60%; }
     .step { display: none; }
     .step.active { display: block; }
+    .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem; color: var(--gray-400); font-size: 14px; gap: 1rem; }
     footer { text-align: center; padding: 1.5rem; font-size: 12px; color: var(--gray-400); border-top: 1px solid var(--gray-200); }
   </style>
 </head>
@@ -85,18 +81,19 @@
     <div class="logo-icon">🏷️</div>
     Sale Manager
   </div>
-  <span id="conn-badge" class="badge badge-gray" style="display:none">Verbonden</span>
+  <span id="conn-badge" class="badge badge-green" style="display:none">✓ Verbonden</span>
 </header>
 
 <main>
-  <div id="connect-screen" class="connect-screen">
-    <div style="font-size: 48px; margin-bottom: 1rem;">🏷️</div>
-    <h2>Sale Manager KidsFun</h2>
-    <p>Zet collecties in de aanbieding met automatische reset.<br>Verbind eerst met je Shopify store om te beginnen.</p>
-    <a href="/api/auth" class="btn-shopify">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-      Verbinden met Shopify
-    </a>
+  <div id="loading-screen" class="loading-screen">
+    <div style="font-size:32px">⏳</div>
+    Verbinding maken met Shopify…
+  </div>
+
+  <div id="error-screen" style="display:none; text-align:center; padding: 4rem 2rem;">
+    <div style="font-size:32px; margin-bottom:1rem">⚠️</div>
+    <p style="color: var(--red); font-size:14px;" id="error-msg">Verbinding mislukt.</p>
+    <p style="color: var(--gray-400); font-size:13px; margin-top:0.5rem">Controleer de omgevingsvariabelen in Vercel.</p>
   </div>
 
   <div id="app-screen" style="display:none">
@@ -193,40 +190,14 @@
   }
 
   async function shopifyFetch(endpoint, method = 'GET', body = null) {
-    const opts = {
-      method,
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' }
-    };
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
     if (body) opts.body = JSON.stringify(body);
     const res = await fetch(`/api/shopify?endpoint=${encodeURIComponent(endpoint)}`, opts);
-    if (res.status === 401) { window.location.href = '/api/auth'; throw new Error('Niet ingelogd'); }
     if (!res.ok) throw new Error(`Shopify fout ${res.status}`);
     return { data: await res.json(), link: res.headers.get('X-Shopify-Link') };
   }
 
   async function init() {
-    const params = new URLSearchParams(window.location.search);
-    if (!params.get('connected')) {
-      // Check if already connected by trying a quick API call
-      try {
-        await shopifyFetch('shop.json');
-        showApp();
-      } catch {
-        // Not connected, show connect screen
-      }
-      return;
-    }
-    showApp();
-  }
-
-  async function showApp() {
-    document.getElementById('connect-screen').style.display = 'none';
-    document.getElementById('app-screen').style.display = 'block';
-    document.getElementById('conn-badge').textContent = '✓ Verbonden';
-    document.getElementById('conn-badge').className = 'badge badge-green';
-    document.getElementById('conn-badge').style.display = 'inline-block';
-
     try {
       const [custom, smart] = await Promise.all([
         shopifyFetch('custom_collections.json?limit=250'),
@@ -240,8 +211,7 @@
       const sel = document.getElementById('collection-select');
       collections.forEach(c => {
         const opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = c.title;
+        opt.value = c.id; opt.textContent = c.title;
         sel.appendChild(opt);
       });
 
@@ -252,8 +222,14 @@
 
       const saved = localStorage.getItem('activeSale_kidsfun');
       if (saved) { activeSale = JSON.parse(saved); showActiveSaleBanner(); }
+
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'block';
+      document.getElementById('conn-badge').style.display = 'inline-block';
     } catch(e) {
-      console.error(e);
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('error-screen').style.display = 'block';
+      document.getElementById('error-msg').textContent = 'Verbinding mislukt: ' + e.message;
     }
   }
 
@@ -272,8 +248,7 @@
     if (!id) return;
     if (selectedCollections.find(c => c.id === id)) { sel.value = ''; return; }
     selectedCollections.push(collections.find(c => c.id === id));
-    renderTags();
-    sel.value = '';
+    renderTags(); sel.value = '';
   }
 
   function removeCollection(id) {
@@ -332,12 +307,11 @@
         const products = await getProductsInCollection(coll.id);
         for (const product of products) {
           for (const variant of product.variants) {
-            const originalPrice = parseFloat(variant.price);
             allUpdates.push({
               variantId: variant.id,
               originalPrice: variant.price,
               originalCompareAt: variant.compare_at_price,
-              newPrice: (originalPrice * (1 - pct)).toFixed(2),
+              newPrice: (parseFloat(variant.price) * (1 - pct)).toFixed(2),
               compareAt: variant.compare_at_price || variant.price
             });
           }
