@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sale Manager — KidsFun</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #2e7d32;
+      --green-light: #e8f5e9;
+      --green-mid: #4caf50;
+      --yellow: #f9a825;
+      --yellow-light: #fffde7;
+      --red: #c62828;
+      --red-light: #ffebee;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-400: #9ca3af;
+      --gray-600: #4b5563;
+      --gray-800: #1f2937;
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--green);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .badge-green { background: var(--green-light); color: var(--green); }
+    .badge-yellow { background: var(--yellow-light); color: #a57c00; }
+    .badge-red { background: var(--red-light); color: var(--red); }
+    .badge-gray { background: var(--gray-100); color: var(--gray-600); }
+
+    main {
+      flex: 1;
+      max-width: 640px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .progress {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 2rem;
+    }
+
+    .prog-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--gray-400);
+    }
+
+    .prog-item.active { color: var(--gray-800); font-weight: 500; }
+    .prog-item.done { color: var(--green); }
+
+    .prog-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 500;
+      background: #fff;
+    }
+
+    .prog-item.active .prog-num { border-color: var(--green); color: var(--green); }
+    .prog-item.done .prog-num { background: var(--green); color: #fff; border-color: var(--green); }
+
+    .prog-line {
+      flex: 1;
+      height: 1.5px;
+      background: var(--gray-200);
+      margin: 0 8px;
+    }
+
+    .prog-line.done { background: var(--green); }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gray-400);
+      margin-bottom: 1.25rem;
+    }
+
+    .field { margin-bottom: 1rem; }
+    .field:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gray-600);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="datetime-local"],
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--gray-800);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus, select:focus { border-color: var(--green); }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--green);
+    }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .btn {
+      width: 100%;
+      padding: 11px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      border: none;
+    }
+
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-primary { background: var(--green); color: #fff; }
+    .btn-primary:hover:not(:disabled) { opacity: 0.9; }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--gray-600);
+      border: 1px solid var(--gray-200);
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover { background: var(--gray-50); }
+
+    .btn-danger {
+      background: #fff;
+      color: var(--red);
+      border: 1px solid #fca5a5;
+      margin-top: 10px;
+    }
+
+    .btn-danger:hover { background: var(--red-light); }
+
+    .status {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+      line-height: 1.5;
+    }
+
+    .status.success { background: var(--green-light); color: var(--green); display: block; }
+    .status.error { background: var(--red-light); color: var(--red); display: block; }
+    .status.loading { background: var(--gray-100); color: var(--gray-600); display: block; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--green-light);
+      color: var(--green);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      margin: 4px 4px 0 0;
+    }
+
+    .tag button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--green);
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
+      opacity: 0.6;
+    }
+
+    .tag button:hover { opacity: 1; }
+
+    .tags-area { min-height: 32px; margin-top: 8px; }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .metric {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .metric .val { font-size: 24px; font-weight: 600; color: var(--gray-800); }
+    .metric .lbl { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+
+    .active-sale-card {
+      background: var(--yellow-light);
+      border: 1px solid #f9a82566;
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .active-sale-card .title { font-weight: 600; font-size: 14px; color: #a57c00; margin-bottom: 6px; }
+    .active-sale-card .meta { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+
+    .preview-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 14px;
+    }
+
+    .preview-row:last-child { border-bottom: none; }
+    .preview-row .key { color: var(--gray-400); font-size: 13px; }
+    .preview-row .val { font-weight: 500; text-align: right; max-width: 60%; }
+
+    .note {
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-top: 10px;
+      line-height: 1.6;
+      display: flex;
+      gap: 6px;
+    }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 12px;
+      color: var(--gray-400);
+      border-top: 1px solid var(--gray-200);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏷️</div>
+    Sale Manager
+  </div>
+  <span id="conn-badge" class="badge badge-gray" style="display:none">Verbonden</span>
+</header>
+
+<main>
+
+  <div class="progress">
+    <div class="prog-item active" id="pi1">
+      <div class="prog-num" id="pn1">1</div>
+      Koppelen
+    </div>
+    <div class="prog-line" id="pl1"></div>
+    <div class="prog-item" id="pi2">
+      <div class="prog-num" id="pn2">2</div>
+      Instellen
+    </div>
+    <div class="prog-line" id="pl2"></div>
+    <div class="prog-item" id="pi3">
+      <div class="prog-num" id="pn3">3</div>
+      Activeren
+    </div>
+  </div>
+
+  <div class="step active" id="step-1">
+    <div class="card">
+      <p class="card-title">Shopify koppeling</p>
+      <div class="field">
+        <label>Store URL</label>
+        <input type="text" id="store-url" placeholder="kidsfunonline.myshopify.com" />
+      </div>
+      <div class="field">
+        <label>Admin API access token</label>
+        <input type="password" id="api-token" placeholder="shpat_..." />
+      </div>
+      <div style="margin-top: 1.25rem;">
+        <button class="btn btn-primary" id="btn-connect" onclick="connect()">Verbinden</button>
+      </div>
+      <div class="status" id="status-connect"></div>
+    </div>
+    <div class="note">
+      🔒 Je credentials worden alleen gebruikt voor directe communicatie met de Shopify API. Ze worden nergens opgeslagen.
+    </div>
+  </div>
+
+  <div class="step" id="step-2">
+    <div class="active-sale-card" id="active-sale-banner" style="display:none">
+      <div class="title">⚠️ Actieve sale</div>
+      <div class="meta" id="active-sale-meta"></div>
+      <button class="btn btn-danger" onclick="cancelSale()">Sale beëindigen & prijzen herstellen</button>
+    </div>
+
+    <div class="metric-row">
+      <div class="metric"><div class="val" id="m-collections">—</div><div class="lbl">Collecties</div></div>
+      <div class="metric"><div class="val" id="m-products">—</div><div class="lbl">Producten</div></div>
+      <div class="metric"><div class="val" id="m-variants">—</div><div class="lbl">Varianten</div></div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">Collecties</p>
+      <div class="field">
+        <label>Selecteer collectie(s)</label>
+        <select id="collection-select" onchange="addCollection()">
+          <option value="">— kies collectie —</option>
+        </select>
+      </div>
+      <div class="tags-area" id="selected-tags"></div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">Kortingsinstellingen</p>
+      <div class="field">
+        <label>Kortingspercentage: <strong id="pct-label">20%</strong></label>
+        <input type="range" min="5" max="75" step="5" value="20" id="discount-pct"
+          oninput="document.getElementById('pct-label').textContent = this.value + '%'" />
+      </div>
+      <div class="row" style="margin-top: 1rem;">
+        <div class="field">
+          <label>Startdatum</label>
+          <input type="datetime-local" id="start-date" />
+        </div>
+        <div class="field">
+          <label>Einddatum (auto-reset)</label>
+          <input type="datetime-local" id="end-date" />
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="goToPreview()">Voorbeeld bekijken →</button>
+    <div class="status" id="status-step2"></div>
+  </div>
+
+  <div class="step" id="step-3">
+    <div class="card">
+      <p class="card-title">Samenvatting</p>
+      <div id="preview-content"></div>
+    </div>
+    <button class="btn btn-primary" id="btn-run" onclick="runSale()">Sale activeren</button>
+    <button class="btn btn-secondary" onclick="goBack()">← Terug aanpassen</button>
+    <div class="status" id="status-step3"></div>
+  </div>
+
+</main>
+
+<footer>
+  Sale Manager voor KidsFun &mdash; gebouwd door <strong>WeScaleUp</strong>
+</footer>
+
+<script>
+  let storeUrl = '', apiToken = '', collections = [], selectedCollections = [], activeSale = null, totalProducts = 0, totalVariants = 0;
+
+  function setStatus(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = 'status ' + type;
+  }
+
+  function setStep(n) {
+    [1,2,3].forEach(i => {
+      document.getElementById('step-' + i).classList.toggle('active', i === n);
+      const pi = document.getElementById('pi' + i);
+      const pn = document.getElementById('pn' + i);
+      pi.classList.remove('active', 'done');
+      if (i < n) { pi.classList.add('done'); pn.innerHTML = '✓'; }
+      else if (i === n) { pi.classList.add('active'); pn.textContent = i; }
+      else { pn.textContent = i; }
+      if (i < 3) document.getElementById('pl' + i).classList.toggle('done', i < n);
+    });
+  }
+
+  async function shopifyFetch(endpoint, method = 'GET', body = null) {
+    const opts = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Store': storeUrl,
+        'X-Shopify-Token': apiToken,
+      }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(`/api/shopify?endpoint=${encodeURIComponent(endpoint)}`, opts);
+    if (!res.ok) throw new Error(`Shopify fout ${res.status}`);
+    return { data: await res.json(), link: res.headers.get('X-Shopify-Link') };
+  }
+
+  async function connect() {
+    storeUrl = document.getElementById('store-url').value.trim().replace(/^https?:\/\//, '');
+    apiToken = document.getElementById('api-token').value.trim();
+    if (!storeUrl || !apiToken) { setStatus('status-connect', 'Vul beide velden in.', 'error'); return; }
+    setStatus('status-connect', 'Verbinding testen…', 'loading');
+    document.getElementById('btn-connect').disabled = true;
+    try {
+      const [custom, smart] = await Promise.all([
+        shopifyFetch('custom_collections.json?limit=250'),
+        shopifyFetch('smart_collections.json?limit=250')
+      ]);
+      collections = [...custom.data.custom_collections, ...smart.data.smart_collections]
+        .sort((a, b) => a.title.localeCompare(b.title));
+
+      const sel = document.getElementById('collection-select');
+      collections.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.title;
+        sel.appendChild(opt);
+      });
+
+      document.getElementById('m-collections').textContent = collections.length;
+      document.getElementById('conn-badge').textContent = '✓ Verbonden';
+      document.getElementById('conn-badge').className = 'badge badge-green';
+      document.getElementById('conn-badge').style.display = 'inline-block';
+
+      const now = new Date();
+      const end = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      document.getElementById('start-date').value = now.toISOString().slice(0, 16);
+      document.getElementById('end-date').value = end.toISOString().slice(0, 16);
+
+      const saved = localStorage.getItem('activeSale_' + storeUrl);
+      if (saved) {
+        activeSale = JSON.parse(saved);
+        showActiveSaleBanner();
+      }
+
+      setStep(2);
+    } catch (e) {
+      setStatus('status-connect', 'Verbinding mislukt. Controleer store URL en API token.', 'error');
+      document.getElementById('btn-connect').disabled = false;
+    }
+  }
+
+  function showActiveSaleBanner() {
+    if (!activeSale) return;
+    const banner = document.getElementById('active-sale-banner');
+    banner.style.display = 'block';
+    document.getElementById('active-sale-meta').innerHTML =
+      `Collecties: <strong>${activeSale.collections.join(', ')}</strong><br>
+       Korting: <strong>${activeSale.pct}%</strong><br>
+       Eindigt op: <strong>${new Date(activeSale.end).toLocaleString('nl-NL')}</strong>`;
+  }
+
+  function addCollection() {
+    const sel = document.getElementById('collection-select');
+    const id = parseInt(sel.value);
+    if (!id) return;
+    if (selectedCollections.find(c => c.id === id)) { sel.value = ''; return; }
+    const coll = collections.find(c => c.id === id);
+    selectedCollections.push(coll);
+    renderTags();
+    sel.value = '';
+  }
+
+  function removeCollection(id) {
+    selectedCollections = selectedCollections.filter(c => c.id !== id);
+    renderTags();
+  }
+
+  function renderTags() {
+    document.getElementById('selected-tags').innerHTML = selectedCollections.map(c =>
+      `<span class="tag">🏷️ ${c.title}<button onclick="removeCollection(${c.id})" aria-label="Verwijder ${c.title}">×</button></span>`
+    ).join('');
+  }
+
+  function goToPreview() {
+    if (selectedCollections.length === 0) { setStatus('status-step2', 'Selecteer minimaal één collectie.', 'error'); return; }
+    const end = document.getElementById('end-date').value;
+    const start = document.getElementById('start-date').value;
+    if (!end) { setStatus('status-step2', 'Vul een einddatum in.', 'error'); return; }
+    if (new Date(end) <= new Date(start)) { setStatus('status-step2', 'Einddatum moet na startdatum liggen.', 'error'); return; }
+    const pct = document.getElementById('discount-pct').value;
+    document.getElementById('preview-content').innerHTML = `
+      <div class="preview-row"><span class="key">Collecties</span><span class="val">${selectedCollections.map(c => c.title).join('<br>')}</span></div>
+      <div class="preview-row"><span class="key">Korting</span><span class="val">${pct}% — nieuwe prijs is ${100 - parseInt(pct)}% van origineel</span></div>
+      <div class="preview-row"><span class="key">Weergave</span><span class="val">Doorgestreepte originele prijs zichtbaar in overzicht</span></div>
+      <div class="preview-row"><span class="key">Startdatum</span><span class="val">${new Date(start).toLocaleString('nl-NL')}</span></div>
+      <div class="preview-row"><span class="key">Auto-reset</span><span class="val">${new Date(end).toLocaleString('nl-NL')}</span></div>
+    `;
+    setStep(3);
+  }
+
+  function goBack() { setStep(2); }
+
+  async function getProductsInCollection(collectionId) {
+    let products = [], endpoint = `collections/${collectionId}/products.json?limit=250`;
+    while (endpoint) {
+      const { data, link } = await shopifyFetch(endpoint);
+      products.push(...data.products);
+      const next = link && link.match(/<([^>]+)>;\s*rel="next"/);
+      endpoint = next ? next[1].replace(/^https:\/\/[^\/]+\/admin\/api\/[^\/]+\//, '') : null;
+    }
+    return products;
+  }
+
+  async function runSale() {
+    const pct = parseInt(document.getElementById('discount-pct').value) / 100;
+    const end = document.getElementById('end-date').value;
+    document.getElementById('btn-run').disabled = true;
+    setStatus('status-step3', 'Producten ophalen uit collecties…', 'loading');
+
+    try {
+      let allUpdates = [];
+      for (const coll of selectedCollections) {
+        const products = await getProductsInCollection(coll.id);
+        for (const product of products) {
+          for (const variant of product.variants) {
+            const originalPrice = parseFloat(variant.price);
+            const newPrice = (originalPrice * (1 - pct)).toFixed(2);
+            allUpdates.push({
+              variantId: variant.id,
+              originalPrice: variant.price,
+              originalCompareAt: variant.compare_at_price,
+              newPrice,
+              compareAt: variant.compare_at_price || variant.price
+            });
+          }
+        }
+      }
+
+      let done = 0;
+      for (const u of allUpdates) {
+        await shopifyFetch(`variants/${u.variantId}.json`, 'PUT', {
+          variant: { id: u.variantId, price: u.newPrice, compare_at_price: u.compareAt }
+        });
+        done++;
+        if (done % 5 === 0 || done === allUpdates.length) {
+          setStatus('status-step3', `${done} van ${allUpdates.length} varianten bijgewerkt…`, 'loading');
+        }
+      }
+
+      activeSale = {
+        collections: selectedCollections.map(c => c.title),
+        pct: Math.round(pct * 100),
+        end,
+        updates: allUpdates
+      };
+      localStorage.setItem('activeSale_' + storeUrl, JSON.stringify(activeSale));
+      scheduleReset(end, allUpdates);
+
+      setStatus('status-step3',
+        `✅ Sale actief! ${done} varianten bijgewerkt. Automatische reset op ${new Date(end).toLocaleString('nl-NL')}.`,
+        'success'
+      );
+      document.getElementById('btn-run').disabled = false;
+    } catch (e) {
+      setStatus('status-step3', 'Fout: ' + e.message, 'error');
+      document.getElementById('btn-run').disabled = false;
+    }
+  }
+
+  function scheduleReset(endDate, updates) {
+    const ms = new Date(endDate) - new Date();
+    if (ms > 0) setTimeout(() => resetPrices(updates), ms);
+  }
+
+  async function resetPrices(updates) {
+    try {
+      for (const u of updates) {
+        await shopifyFetch(`variants/${u.variantId}.json`, 'PUT', {
+          variant: { id: u.variantId, price: u.originalPrice, compare_at_price: u.originalCompareAt || null }
+        });
+      }
+      localStorage.removeItem('activeSale_' + storeUrl);
+      activeSale = null;
+      document.getElementById('active-sale-banner').style.display = 'none';
+      alert('✅ Sale beëindigd. Alle originele prijzen zijn hersteld.');
+    } catch (e) {
+      alert('Reset fout: ' + e.message);
+    }
+  }
+
+  async function cancelSale() {
+    if (!activeSale || !confirm('Weet je zeker dat je de sale wil beëindigen en alle prijzen wil herstellen?')) return;
+    await resetPrices(activeSale.updates);
+  }
+</script>
+
+</body>
+</html>
